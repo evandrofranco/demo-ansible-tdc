@@ -1,0 +1,57 @@
+---
+
+- hosts: node1
+  tasks: 
+  
+  - pause: seconds=3
+  - name: insert marble1
+    command: docker exec -it cli peer chaincode invoke -C channel1 -n marbles -c '{"Args":["initMarble","marble1","blue","35","tom"]}'
+    register: result
+  - assert:
+      that:
+        - "'result: status:200' in result.stdout"
+
+  - pause: seconds=3
+  - name: insert marble2
+    command: docker exec -it cli peer chaincode invoke -C channel1 -n marbles -c '{"Args":["initMarble","marble2","red","50","tom"]}'
+    register: result
+  - assert:
+      that:
+        - "'result: status:200' in result.stdout"
+
+  - pause: seconds=3
+  - name: insert marble3
+    command: docker exec -it cli peer chaincode invoke -C channel1 -n marbles -c '{"Args":["initMarble","marble3","blue","70","tom"]}'
+    register: result
+  - assert:
+      that:
+        - "'result: status:200' in result.stdout"
+
+  - pause: seconds=3
+  - name: transfer marble2
+    command: docker exec -it cli peer chaincode invoke -C channel1 -n marbles -c '{"Args":["transferMarble","marble2","jerry"]}'
+    register: result
+  - assert:
+      that:
+        - "'result: status:200' in result.stdout"
+
+
+- hosts: node2
+  tasks:
+  - pause: seconds=3
+  - name: query marble1
+    command: docker exec -it cli peer chaincode invoke -C channel1 -n marbles -c '{"Args":["readMarble","marble1"]}'
+    register: result
+  - assert:
+      that:
+        - "'result: status:200' in result.stdout"
+        - "'marble1' in result.stdout"
+
+  - pause: seconds=3
+  - name: rich query tom marbles
+    command: docker exec -it cli peer chaincode invoke -C channel1 -n marbles -c '{"Args":["queryMarblesByOwner","tom"]}'
+    register: result
+  - assert:
+      that:
+        - "'result: status:200' in result.stdout"
+        - "'marble3' in result.stdout"

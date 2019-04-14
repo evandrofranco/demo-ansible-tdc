@@ -8,19 +8,27 @@
       chdir: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
 
   - name: Create channel
-    command: docker exec -it cli peer channel create -o orderer0.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1.tx
+    command: "docker exec -it cli peer channel create -o orderer0.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1.tx"
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
 
   - name: Copy channel artifact
-    command: docker exec -it cli cp channel1.block channel-artifacts/
+    command: "docker exec -it cli cp channel1.block channel-artifacts/"
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
 
   - name: Join peer to channel
-    command: docker exec -it cli peer channel join -b channel1.block
+    command: "docker exec -it cli peer channel join -b channel1.block"
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
 
   - name: Update channel
-    command: docker exec -it cli peer channel update -o orderer0.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1_Node1MSPanchors.tx
+    command: "docker exec -it cli peer channel update -o orderer0.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1_Node1MSPanchors.tx"
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
 
   - name: Fetch block file into local dir
-    synchronize:  src={{ item }} dest=/home/ubuntu/1_initial_setup_one_time_only/fabric-demo-tdc-ansible/channel-artifacts/ mode=pull
+    synchronize:  src={{ item }} dest=/home/ubuntu/demo_ansible/1_initial_setup_one_time_only/fabric-demo-tdc-ansible/channel-artifacts/ mode=pull
     with_items:
       - "/home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/channel-artifacts/channel1.block"
 
@@ -33,11 +41,16 @@
 
   - name: Copy Block File Into Protege Host
     copy:
-      src: /home/ubuntu/1_initial_setup_one_time_only/fabric-demo-tdc-ansible/channel-artifacts/channel1.block
+      src: /home/ubuntu/demo_ansible/1_initial_setup_one_time_only/fabric-demo-tdc-ansible/channel-artifacts/channel1.block
       dest: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/channel-artifacts/channel1.block
 
   - name: Join peer to channel
-    command: docker exec -it cli peer channel join -b channel-artifacts/channel1.block
+    command: "docker exec -it cli peer channel join -b channel-artifacts/channel1.block"
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
 
   - name: Update channel
-    command: docker exec -it cli peer channel update -o orderer1.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1_Node2MSPanchors.tx
+    command: "docker exec -it cli peer channel update -o orderer1.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1_Node2MSPanchors.tx"
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+

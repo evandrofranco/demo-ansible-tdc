@@ -1,20 +1,19 @@
 ---
 
 
-- hosts: brinks
+- hosts: node1
   tasks:
   # the chaincode version must be changed
   - name: install chaincode
-    command: docker exec -it cli peer chaincode install -n transport1 -v {{ chaincode_version }} -l node -p /opt/gopath/src/github.com/transport
+    command: docker exec -it cli peer chaincode install -n marbles -v {{ chaincode_version }} -l node -p /opt/gopath/src/github.com/marbles 
   
-- hosts: protege
+- hosts: node2
   tasks:
   - name: install chaincde
-    command: docker exec -it cli peer chaincode install -n transport1 -v {{ chaincode_version }} -l node -p /opt/gopath/src/github.com/transport
+    command: docker exec -it cli peer chaincode install -n marbles -v {{ chaincode_version }} -l node -p /opt/gopath/src/github.com/marbles
 
-- hosts: brinks 
+- hosts: node1
   tasks:
   - name: instantiate chaincode
-    command: docker exec -it cli peer chaincode instantiate -o orderer0.sempreit.com:7050 -C channel1 -n transport1 -v {{ chaincode_version }} -c '{"Args":["init"]}' -P "OR ('BrinksMSP.member','ProtegeMSP.member')"
-
+    command: docker exec -it cli peer chaincode instantiate -o orderer0.demo.com:7050 -C channel1 -n marbles -v {{ chaincode_version }} -c '{"Args":["init"]}' -P "OR ('Node1MSP.member','Node2MSP.member')"
 
