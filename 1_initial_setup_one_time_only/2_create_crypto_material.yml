@@ -1,0 +1,78 @@
+---
+
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: Delete local directory
+      file: path=/home/ubuntu/demo_ansible/1_initial_setup_one_time_only/fabric-demo-tdc-ansible/ state=absent
+
+# Create Crypto Into Brinks Machine 
+- hosts: node1
+  tasks:
+
+    - name: Delete Repo Path
+      file:
+        path: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+        state: absent
+
+    - name: Clone Git Repo & Prepare Dir for Crypto Material
+      shell: |
+        source /home/ubuntu/.profile
+        cd /home/ubuntu/go/src/github.com/hyperledger/
+        git clone https://github.com/evandrofranco/fabric-demo-tdc-ansible.git
+        cd fabric-demo-tdc-ansible/
+        rm -rf crypto-config
+        cryptogen generate --config=./crypto-config.yaml
+        rm -rf channel-artifacts
+        mkdir channel-artifacts
+      args:
+        executable: /bin/bash
+      register: command_result
+
+    - debug:
+        var: command_result
+
+    - name: Generate Crypto Material - Channel 1
+      shell: |
+        source /home/ubuntu/.profile
+        cd /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/
+        configtxgen -profile TwoOrgsOrdererGenesis -outputBlock ./channel-artifacts/genesis.block
+        configtxgen -profile MainOrgsChannel -outputCreateChannelTx ./channel-artifacts/channel1.tx -channelID channel1
+        configtxgen -profile MainOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/channel1_Node1MSPanchors.tx -channelID channel1 -asOrg Node1MSP
+        configtxgen -profile MainOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/channel1_Node2MSPanchors.tx -channelID channel1 -asOrg Node2MSP
+      args:
+        executable: /bin/bash
+      register: command_result
+
+    - debug:
+        var: command_result
+
+
+    - name: Fetch project from remote server into current dir
+      synchronize:  src={{ item }} dest=. mode=pull
+      with_items:
+        - "/home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible"
+      register: command_result
+
+    - debug:
+        var: command_result
+
+
+# Copy Crypto Into Other Machines
+- hosts:
+    node2
+  tasks:
+
+    - name: Delete Repo Path
+      file:
+        path: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+        state: absent
+
+    - name: Copy Crypto Material Into Others Hosts
+      copy:
+        src: fabric-demo-tdc-ansible/
+        dest: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/
+      register: command_result
+
+    - debug:
+        var: command_result

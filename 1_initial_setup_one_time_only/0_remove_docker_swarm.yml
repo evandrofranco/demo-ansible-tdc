@@ -1,0 +1,15 @@
+---
+
+# Remove Overlay Network
+- hosts: node1
+  vars:
+    net_name: my-net
+  tasks:
+    - name: Remove Overlay Network
+      command: docker network rm {{ net_name }}
+
+# Remove Swarm on all Machines
+- hosts: blockchain
+  tasks:
+    - name: Remove Swarm
+      command: docker swarm leave --force

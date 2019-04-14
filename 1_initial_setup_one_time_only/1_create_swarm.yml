@@ -1,0 +1,59 @@
+---
+
+# Create swarm on all Machines
+- hosts: node1
+  tasks:
+    - name: Configuring Swarm Main - Node 1 IP
+      setup:
+        filter: ansible_default_ipv4.address
+    - debug:
+        var: ansible_default_ipv4.address
+
+    - name: Create Swarm on Node 1
+      command: "docker swarm init --advertise-addr {{ ansible_default_ipv4.address }}"
+      register: command_result
+      failed_when: "'Error' in command_result.stdout" 
+    
+    - set_fact:
+        temp: "{{ command_result.stdout }}"
+
+    - set_fact:
+        cmd_final: "{{  temp | regex_search('(:\\n\\n    )(?P<cmd>.*)(\\n\\n)','\\g<cmd>')  }}"
+    
+    # Print Variables
+    - debug: 
+        var: command_result
+
+    - debug: 
+        var: cmd_final
+     
+# Start Swarm on Node 2
+- hosts: node2
+  tasks:
+    - set_fact:
+        run_cmd: "{{ hostvars['node1'].cmd_final }}"
+    
+    - debug:
+        var: run_cmd
+
+    - name: Configuring Swarm on Node 1
+      command: "{{ run_cmd[0] }}"
+      register: node1_result
+      failed_when: "'Error' in node1_result.stdout"
+    
+    - debug:
+        var: node1_result
+
+
+# Create overlay network
+- hosts: node1
+  vars:
+    net_name: my-net
+  tasks:
+    - name: Create Overlay Network
+      command: "docker network create --attachable --driver overlay {{ net_name }}"
+      register: cmd_result
+      failed_when: "'Error' in cmd_result.stdout"
+
+    - debug:
+        var: cmd_result

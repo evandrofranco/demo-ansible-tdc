@@ -1,0 +1,15 @@
+---
+
+- hosts: node1
+  tasks:
+  - name: Setup orderer
+    command: docker run -d --rm -it --network="my-net" --name orderer0.demo.com -p 7050:7050 -e ORDERER_GENERAL_LOGLEVEL=debug -e ORDERER_GENERAL_LISTENADDRESS=0.0.0.0 -e ORDERER_GENERAL_LISTENPORT=7050 -e ORDERER_GENERAL_GENESISMETHOD=file -e ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block -e ORDERER_GENERAL_LOCALMSPID=OrdererMSP -e ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp -e ORDERER_GENERAL_TLS_ENABLED=false -e CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=my-net -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config:/var/hyperledger/fabric/crypto-config -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config/ordererOrganizations/demo.com/orderers/orderer0.demo.com/msp:/var/hyperledger/orderer/msp -w /opt/gopath/src/github.com/hyperledger/fabric hyperledger/fabric-orderer orderer
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+
+- hosts: node2
+  tasks:
+  - name: Setup orderer
+    command: docker run -d --rm -it --network="my-net" --name orderer1.demo.com -p 7050:7050 -e ORDERER_GENERAL_LOGLEVEL=debug -e ORDERER_GENERAL_LISTENADDRESS=0.0.0.0 -e ORDERER_GENERAL_LISTENPORT=7050 -e ORDERER_GENERAL_GENESISMETHOD=file -e ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block -e ORDERER_GENERAL_LOCALMSPID=OrdererMSP -e ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp -e ORDERER_GENERAL_TLS_ENABLED=false -e CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=my-net -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config:/var/hyperledger/fabric/crypto-config -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config/ordererOrganizations/demo.com/orderers/orderer1.demo.com/msp:/var/hyperledger/orderer/msp -w /opt/gopath/src/github.com/hyperledger/fabric hyperledger/fabric-orderer orderer
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible

@@ -1,0 +1,25 @@
+---
+
+- hosts: all
+  tasks:
+    - name: Delete docker containers
+      shell: |
+        docker kill $(docker ps -q)
+      args:
+        executable: /bin/bash
+      register: command_result
+      ignore_errors: yes
+
+    #- debug:
+    #    var: command_result
+    
+    - name: Rm docker containers
+      shell: |
+        docker rm $(docker ps -aq)
+      args:
+        executable: /bin/bash
+      register: command_result
+      ignore_errors: yes
+    
+    #- debug:
+    #    var: command_result

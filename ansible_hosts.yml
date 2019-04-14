@@ -1,0 +1,12 @@
+all:
+  children:
+    blockchain:
+      hosts:
+        node1: 
+          ansible_host: 172.31.39.186
+        node2: 
+          ansible_host: 172.31.40.165
+      vars:
+        ansible_python_interpreter: /usr/bin/python3 
+        ansible_ssh_private_key_file: ~/.ssh/kp_qa_oregon.pem
+        ansible_user: ubuntu 

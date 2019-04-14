@@ -1,0 +1,57 @@
+---
+
+# Setting the Peers CA
+
+- hosts: node1
+  tasks: 
+  
+    - name: Get Crypto SK for Node1
+      command: "ls -S /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config/peerOrganizations/node1.demo.com/ca/"
+      register: command_result
+      failed_when: "'Error' in command_result.stdout"
+
+    - debug:
+        var: command_result
+
+    - set_fact:
+        temp: "{{ command_result.stdout_lines[1] }}"
+    
+    #- debug:
+    #    var: command_result
+
+    - debug:
+        var: temp
+
+    - name: Setup Node1 CA
+      command: docker run -d --rm -it --network="my-net" --name ca.node1.demo.com -p 7054:7054 -e FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server -e FABRIC_CA_SERVER_CA_NAME=ca.node1.demo.com -e FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.node1.demo.com-cert.pem -e FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/{{ temp }} -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config/peerOrganizations/node1.demo.com/ca/:/etc/hyperledger/fabric-ca-server-config hyperledger/fabric-ca sh -c 'fabric-ca-server start -b admin:adminpw -d'
+      args:
+        chdir: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+      register: result
+
+    - debug:
+        var: result
+
+
+- hosts: node2
+  tasks:
+
+    - name: Get Crypto SK for Node2
+      command: "ls -S /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config/peerOrganizations/node2.demo.com/ca/"
+      register: command_result
+      failed_when: "'Error' in command_result.stdout"
+
+    - set_fact:
+        temp: "{{ command_result.stdout_lines[1] }}"
+
+    - debug:
+        var: temp
+
+    - name: Setup Node2  CA
+    # The sk key should be changed
+      command: docker run -d --rm -it --network="my-net" --name ca.node2.demo.com -p 7054:7054 -e FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server -e FABRIC_CA_SERVER_CA_NAME=ca.node2.demo.com -e FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.node2.demo.com-cert.pem -e FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/{{ temp }} -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config/peerOrganizations/node2.demo.com/ca/:/etc/hyperledger/fabric-ca-server-config hyperledger/fabric-ca sh -c 'fabric-ca-server start -b admin:adminpw -d'
+      args:
+        chdir: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+      register: result
+
+    - debug:
+        var: result

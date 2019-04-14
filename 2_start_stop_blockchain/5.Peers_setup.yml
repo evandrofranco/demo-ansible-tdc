@@ -1,0 +1,27 @@
+---
+
+- hosts: node1
+  tasks: 
+  - name: Setup couch db
+    command: docker run -d --rm -it --network="my-net" --name couchdb0 -p 5984:5984 -e COUCHDB_USER= -e COUCHDB_PASSWORD= -e CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=my-net hyperledger/fabric-couchdb
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+
+  - name: Setup peer
+    command: docker run -d --rm -it --link orderer0.demo.com:orderer0.demo.com --network="my-net" --name peer0.node1.demo.com -p 8051:7051 -p 8053:7053 -e CORE_LEDGER_STATE_STATEDATABASE=CouchDB -e CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984 -e CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME= -e CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD= -e CORE_PEER_ADDRESSAUTODETECT=true -e CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock -e CORE_LOGGING_LEVEL=DEBUG -e CORE_PEER_NETWORKID=peer0.node1.demo.com -e CORE_NEXT=true -e CORE_PEER_ENDORSER_ENABLED=true -e CORE_PEER_ID=peer0.node1.demo.com -e CORE_PEER_PROFILE_ENABLED=true -e CORE_PEER_COMMITTER_LEDGER_ORDERER=orderer0.demo.com:7050 -e CORE_PEER_GOSSIP_IGNORESECURITY=true -e CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=my-net -e CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.node1.demo.com:7051 -e CORE_PEER_TLS_ENABLED=false -e CORE_PEER_GOSSIP_USELEADERELECTION=false -e CORE_PEER_GOSSIP_ORGLEADER=true -e CORE_PEER_LOCALMSPID=Node1MSP -v /var/run/:/host/var/run/ -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config/peerOrganizations/node1.demo.com/peers/peer0.node1.demo.com/msp:/etc/hyperledger/fabric/msp -w /opt/gopath/src/github.com/hyperledger/fabric/peer hyperledger/fabric-peer peer node start
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+
+
+- hosts: node2
+  tasks: 
+  - name: Setup couch db
+    command: docker run -d --rm -it --network="my-net" --name couchdb1 -p 5984:5984 -e COUCHDB_USER= -e COUCHDB_PASSWORD= -e CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=my-net hyperledger/fabric-couchdb
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+
+  - name: Setup peer
+    command: docker run -d --rm -it --link orderer1.demo.com:orderer1.demo.com --network="my-net" --name peer0.node2.demo.com -p 8051:7051 -p 8053:7053 -e CORE_LEDGER_STATE_STATEDATABASE=CouchDB -e CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984 -e CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME= -e CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD= -e CORE_PEER_ADDRESSAUTODETECT=true -e CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock -e CORE_LOGGING_LEVEL=DEBUG -e CORE_PEER_NETWORKID=peer0.node2.demo.com -e CORE_NEXT=true -e CORE_PEER_ENDORSER_ENABLED=true -e CORE_PEER_ID=peer0.node2.demo.com -e CORE_PEER_PROFILE_ENABLED=true -e CORE_PEER_COMMITTER_LEDGER_ORDERER=orderer1.demo.com:7050 -e CORE_PEER_GOSSIP_IGNORESECURITY=true -e CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=my-net -e CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.node2.demo.com:7051 -e CORE_PEER_TLS_ENABLED=false -e CORE_PEER_GOSSIP_USELEADERELECTION=false -e CORE_PEER_GOSSIP_ORGLEADER=true -e CORE_PEER_LOCALMSPID=Node2MSP -v /var/run/:/host/var/run/ -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config/peerOrganizations/node2.demo.com/peers/peer0.node2.demo.com/msp:/etc/hyperledger/fabric/msp -w /opt/gopath/src/github.com/hyperledger/fabric/peer hyperledger/fabric-peer peer node start
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+

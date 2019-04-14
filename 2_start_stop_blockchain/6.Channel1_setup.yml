@@ -1,0 +1,43 @@
+---
+
+- hosts: node1
+  tasks:
+  - name: Create cli container in peer1
+    command: docker run -d --rm -it --network="my-net" --name cli --link orderer0.demo.com:orderer0.demo.com --link peer0.node1.demo.com:peer0.node1.demo.com -p 12051:7051 -p 12053:7053 -e GOPATH=/opt/gopath -e CORE_PEER_LOCALMSPID=Node1MSP -e CORE_PEER_TLS_ENABLED=false -e CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock -e FABRIC_LOGGING_SPEC=DEBUG -e CORE_PEER_ID=cli -e CORE_PEER_ADDRESS=peer0.node1.demo.com:7051 -e CORE_PEER_NETWORKID=cli -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/node1.demo.com/users/Admin@node1.demo.com/msp/ -e CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=my-net -v /var/run/:/host/var/run/ -v /home/ubuntu/go/src/github.com/hyperledger/fabric-samples/chaincode/marbles02/node/:/opt/gopath/src/github.com/marbles -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts -w /opt/gopath/src/github.com/hyperledger/fabric/peer hyperledger/fabric-tools
+    args:
+      chdir: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+
+  - name: Create channel
+    command: docker exec -it cli peer channel create -o orderer0.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1.tx
+
+  - name: Copy channel artifact
+    command: docker exec -it cli cp channel1.block channel-artifacts/
+
+  - name: Join peer to channel
+    command: docker exec -it cli peer channel join -b channel1.block
+
+  - name: Update channel
+    command: docker exec -it cli peer channel update -o orderer0.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1_Node1MSPanchors.tx
+
+  - name: Fetch block file into local dir
+    synchronize:  src={{ item }} dest=/home/ubuntu/1_initial_setup_one_time_only/fabric-demo-tdc-ansible/channel-artifacts/ mode=pull
+    with_items:
+      - "/home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/channel-artifacts/channel1.block"
+
+- hosts: node2
+  tasks:
+  - name: Create cli container in peer2
+    command: docker run -d --rm -it --network="my-net" --name cli --link orderer1.demo.com:orderer1.demo.com --link peer0.node2.demo.com:peer0.node2.demo.com -p 12051:7051 -p 12053:7053 -e GOPATH=/opt/gopath -e CORE_PEER_LOCALMSPID=Node2MSP -e CORE_PEER_TLS_ENABLED=false -e CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock -e FABRIC_LOGGING_SPEC=DEBUG -e CORE_PEER_ID=cli -e CORE_PEER_ADDRESS=peer0.node2.demo.com:7051 -e CORE_PEER_NETWORKID=cli -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/node2.demo.com/users/Admin@node2.demo.com/msp/ -e CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=my-net  -v /var/run/:/host/var/run/ -v /home/ubuntu/go/src/github.com/hyperledger/fabric-samples/chaincode/marbles02/node/:/opt/gopath/src/github.com/marbles -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ -v /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts -w /opt/gopath/src/github.com/hyperledger/fabric/peer hyperledger/fabric-tools
+    args:
+      chdir: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+
+  - name: Copy Block File Into Protege Host
+    copy:
+      src: /home/ubuntu/1_initial_setup_one_time_only/fabric-demo-tdc-ansible/channel-artifacts/channel1.block
+      dest: /home/ubuntu/go/src/github.com/hyperledger/fabric-demo-tdc-ansible/channel-artifacts/channel1.block
+
+  - name: Join peer to channel
+    command: docker exec -it cli peer channel join -b channel-artifacts/channel1.block
+
+  - name: Update channel
+    command: docker exec -it cli peer channel update -o orderer1.demo.com:7050 -c channel1 -f ./channel-artifacts/channel1_Node2MSPanchors.tx

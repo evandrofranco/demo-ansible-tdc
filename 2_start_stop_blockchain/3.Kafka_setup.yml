@@ -1,0 +1,18 @@
+---
+
+
+# Setting Kafka
+
+- hosts: node1
+  tasks:  
+  - name: Setup kafka container
+    command: docker run -d --rm -it --network="my-net" --name kafka0 -p 9093 -p 9092 -e KAFKA_MESSAGE_MAX_BYTES=103809024 -e KAFKA_REPLICA_FETCH_MAX_BYTES=103809024 -e KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false -e KAFKA_BROKER_ID=0 -e KAFKA_MIN_INSYNC_REPLICAS=1 -e KAFKA_DEFAULT_REPLICATION_FACTOR=2 -e KAFKA_ZOOKEEPER_CONNECT="zookeeper0:2181,zookeeper1:2181" hyperledger/fabric-kafka
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
+
+- hosts: node2
+  tasks:
+  - name: Setup kafka container
+    command: docker run -d --rm -it --network="my-net" --name kafka1 -p 9093 -p 9092 -e KAFKA_MESSAGE_MAX_BYTES=103809024 -e KAFKA_REPLICA_FETCH_MAX_BYTES=103809024 -e KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false -e KAFKA_BROKER_ID=1 -e KAFKA_MIN_INSYNC_REPLICAS=1 -e KAFKA_DEFAULT_REPLICATION_FACTOR=2 -e KAFKA_ZOOKEEPER_CONNECT="zookeeper0:2181,zookeeper1:2181" hyperledger/fabric-kafka
+    args:
+      chdir: ~/go/src/github.com/hyperledger/fabric-demo-tdc-ansible
